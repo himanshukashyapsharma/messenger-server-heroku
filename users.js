@@ -8,7 +8,7 @@ const addUser = ({id,name,room})=>{
     const existingUser = users.find((user)=> user.room === room && user.name === name)
 
     if(existingUser){
-        return {error: "Username already exists."}
+        return {error: "username already exists"}
     }
     
     const user = {id,name,room}

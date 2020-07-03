@@ -26,7 +26,12 @@ io.on("connection",(socket)=>{
         //uses addUser function from User.js to add a user to users array
         const {error,user} = addUser({id: socket.id, name,room})
     
-        if(error) return callback(error)
+        if(error){
+            console.log(error)
+            // return callback(error)
+            socket.emit("message",{user: "admin", text: `${error}, Please go back and choose another username.`})
+            return null
+        } 
 
         //sends a welcome message to the user when he/she joins
         socket.emit("message",{user: "admin", text: `${user.name}, welcome to the room ${user.room}.`})
@@ -45,15 +50,21 @@ io.on("connection",(socket)=>{
         
         //get User function from User.js returns a user with the socket.id associated with it
         const user = getUser(socket.id)
-
-        //sends an object with user-name and text to the room(every user in room recieves it)
-        // console.log(user) 
-        io.to(user.room).emit("message",{user:user.name,text: message})
+        console.log(user)
+        if(user !== undefined){
+            //sends an object with user-name and text to the room(every user in room recieves it)
+            // console.log(user)
+            io.to(user.room).emit("message",{user:user.name,text: message})
         
-        //sends updated user list every time a message is sent(not implemented on client side yet)
-        io.to(user.room).emit("roomData",{room: user.room,users: getUsersInRoom(user.room)})
+            //sends updated user list every time a message is sent(not implemented on client side yet)
+            io.to(user.room).emit("roomData",{room: user.room,users: getUsersInRoom(user.room)})
+            callback()
+        }else{
+            socket.emit("message",{user: "admin", text: `This room has been terminated. Please exit or create Another room`})
+            callback()
+        } 
 
-        callback()
+        
     })
 
     socket.on("disconnect",()=>{
